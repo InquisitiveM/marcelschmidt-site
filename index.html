@@ -381,6 +381,50 @@
   .m-body::-webkit-scrollbar { width: 8px; }
   .m-body::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
 
+  /* modal step navigation */
+  .m-nav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    padding: 14px 18px 16px;
+    border-top: 1px solid var(--line);
+    background: linear-gradient(0deg, color-mix(in oklab, var(--accent) 3%, transparent), transparent);
+  }
+  .m-nav-tile {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 14px;
+    background: color-mix(in oklab, var(--surface) 50%, transparent);
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit; cursor: pointer;
+    text-align: left;
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+  }
+  .m-nav-tile.next { align-items: flex-end; text-align: right; }
+  .m-nav-tile:hover {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+    transform: translateY(-1px);
+  }
+  .m-nav-tile .dir {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    color: var(--accent); text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .m-nav-tile .dir svg { width: 12px; height: 12px; }
+  .m-nav-tile .num {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-3); letter-spacing: .12em;
+  }
+  .m-nav-tile .ttl {
+    font-family: var(--display); font-size: 15px; font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .m-nav-spacer { visibility: hidden; pointer-events: none; }
+  @media (max-width: 540px) {
+    .m-nav { grid-template-columns: 1fr; }
+    .m-nav-tile.next, .m-nav-tile.prev { align-items: flex-start; text-align: left; }
+  }
+
   /* content patterns */
   .prose { color: var(--text-2); font-size: 15px; line-height: 1.6; max-width: 72ch; }
   .prose p { margin: 0 0 14px; }
@@ -893,7 +937,7 @@
       <div class="m-body">
         <div class="two-col" style="margin-bottom:18px;">
           <div class="card"><div class="lab">Degree</div><div class="big" style="font-size:20px;">MSc Industrial Eng. & Management</div><div class="sub">Health Technology focus · TU Berlin, Germany</div></div>
-          <div class="card"><div class="lab">Exchange</div><div class="big" style="font-size:20px;">School of Economics & Management</div><div class="sub">Strategy focus · Beijing Jiaotong University (China)</div></div>
+          <div class="card"><div class="lab">Exchange</div><div class="big" style="font-size:20px;">School of Economics & Management</div><div class="sub">Strategy focus · Beijing Jiaotong University, China</div></div>
           <div class="card"><div class="lab">Degree</div><div class="big" style="font-size:20px;">BSc Industrial Eng. & Management</div><div class="sub">Mechanical Engineering focus · TU Darmstadt, Germany</div></div>
         </div>
         <div style="font-family:var(--mono); font-size:10px; color:var(--text-3); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px;">Recent licenses & certifications</div>
@@ -1087,6 +1131,50 @@
         e.preventDefault();
         openPanel(b.dataset.open);
       });
+    });
+
+    // === Modal step nav (prev / next) ===
+    const PANEL_ORDER = ['video','about','experience','skills','certs','industries','activity','languages','contact'];
+    const PANEL_LABELS = {
+      video:      { num: '00 · INTRO',       ttl: 'Profile Video' },
+      about:      { num: '01 · ABOUT',       ttl: 'Summary' },
+      experience: { num: '02 · EXPERIENCE',  ttl: 'Roles & Outcomes' },
+      skills:     { num: '03 · SKILLS',      ttl: 'Expertise' },
+      certs:      { num: '04 · CERTS',       ttl: 'Credentials' },
+      industries: { num: '05 · INDUSTRIES',  ttl: 'Sector Context' },
+      activity:   { num: '06 · ACTIVITY',    ttl: 'Interests & POV' },
+      languages:  { num: '07 · LANGUAGES',   ttl: 'Fluency' },
+      contact:    { num: '08 · CONTACT',     ttl: 'Get in touch' },
+    };
+    const ARROW_LEFT  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>';
+    const ARROW_RIGHT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    function tileHTML(target, dir) {
+      if (!target) return '<div class="m-nav-spacer"></div>';
+      const lbl = PANEL_LABELS[target];
+      const arrow = dir === 'prev' ? ARROW_LEFT : ARROW_RIGHT;
+      const dirText = dir === 'prev' ? 'Previous' : 'Next';
+      const inner = dir === 'prev'
+        ? '<span class="dir">' + arrow + dirText + '</span>'
+        : '<span class="dir">' + dirText + arrow + '</span>';
+      return '<button class="m-nav-tile ' + dir + '" data-open="' + target + '">'
+        + inner
+        + '<span class="num">' + lbl.num + '</span>'
+        + '<span class="ttl">' + lbl.ttl + '</span>'
+        + '</button>';
+    }
+    document.querySelectorAll('[data-panel]').forEach(modal => {
+      const name = modal.dataset.panel;
+      const idx = PANEL_ORDER.indexOf(name);
+      if (idx === -1) return;
+      const prev = idx > 0 ? PANEL_ORDER[idx - 1] : null;
+      const next = idx < PANEL_ORDER.length - 1 ? PANEL_ORDER[idx + 1] : null;
+      const nav = document.createElement('div');
+      nav.className = 'm-nav';
+      nav.innerHTML = tileHTML(prev, 'prev') + tileHTML(next, 'next');
+      nav.querySelectorAll('[data-open]').forEach(b => {
+        b.addEventListener('click', (e) => { e.preventDefault(); openPanel(b.dataset.open); });
+      });
+      modal.appendChild(nav);
     });
     scrim.addEventListener('click', (e) => {
       if (e.target === scrim || e.target.closest('[data-close]')) closePanel();
