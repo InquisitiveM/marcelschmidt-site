@@ -383,46 +383,43 @@
 
   /* modal step navigation */
   .m-nav {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    padding: 14px 18px 16px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    padding: 10px 18px 12px;
     border-top: 1px solid var(--line);
-    background: linear-gradient(0deg, color-mix(in oklab, var(--accent) 3%, transparent), transparent);
   }
   .m-nav-tile {
-    display: flex; flex-direction: column; gap: 4px;
-    padding: 10px 14px;
-    background: color-mix(in oklab, var(--surface) 50%, transparent);
-    border: 1px solid var(--line-2);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: inherit; cursor: pointer;
-    text-align: left;
-    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-2);
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .12em; text-transform: uppercase;
+    cursor: pointer;
+    transition: color .2s ease, border-color .2s ease, background .2s ease;
   }
-  .m-nav-tile.next { align-items: flex-end; text-align: right; }
+  .m-nav-tile.next { justify-content: flex-end; justify-self: end; }
+  .m-nav-tile.prev { justify-content: flex-start; justify-self: start; }
   .m-nav-tile:hover {
-    border-color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 6%, transparent);
-    transform: translateY(-1px);
+    color: var(--text);
+    border-color: var(--line-2);
+    background: color-mix(in oklab, var(--accent) 4%, transparent);
   }
   .m-nav-tile .dir {
-    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
-    color: var(--accent); text-transform: uppercase;
-    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent);
+    display: inline-flex; align-items: center;
   }
   .m-nav-tile .dir svg { width: 12px; height: 12px; }
-  .m-nav-tile .num {
-    font-family: var(--mono); font-size: 10px;
-    color: var(--text-3); letter-spacing: .12em;
-  }
   .m-nav-tile .ttl {
-    font-family: var(--display); font-size: 15px; font-weight: 500;
-    letter-spacing: -0.01em;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .08em;
+    color: inherit;
   }
+  .m-nav-tile .num { display: none; }
   .m-nav-spacer { visibility: hidden; pointer-events: none; }
   @media (max-width: 540px) {
-    .m-nav { grid-template-columns: 1fr; }
-    .m-nav-tile.next, .m-nav-tile.prev { align-items: flex-start; text-align: left; }
+    .m-nav-tile.next, .m-nav-tile.prev { justify-self: stretch; justify-content: center; }
   }
 
   /* content patterns */
@@ -708,7 +705,7 @@
           </button>
           <button class="dd" data-open="activity">
             <span class="num">06 / ACTIVITY</span>
-            <span class="ttl">Interests & POV <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M10 7h7v7"/></svg></span>
+            <span class="ttl">Engagement & POV <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M10 7h7v7"/></svg></span>
           </button>
           <button class="dd" data-open="languages">
             <span class="num">07 / LANGUAGES</span>
@@ -959,7 +956,7 @@
       <div class="m-head">
         <div>
           <div class="m-eye">05 · INDUSTRIES</div>
-          <h2>Where I've been engaging with customers</h2>
+          <h2>Where I've been helping customers succeed</h2>
         </div>
         <button class="m-close" data-close>✕</button>
       </div>
@@ -1073,7 +1070,7 @@
         <button class="m-close" data-close>✕</button>
       </div>
       <div class="m-body" style="padding:0;">
-        <iframe src="marcel-profile-video.html" style="width:100%; height:min(72vh, 640px); border:0; display:block; background:#0a0c10;" title="Marcel Schmidt — Profile video" loading="lazy" allow="autoplay; fullscreen"></iframe>
+        <iframe src="marcel-profile-video.html?v=2" style="width:100%; height:min(62vh, 560px); border:0; display:block; background:#0a0c10;" title="Marcel Schmidt — Profile video" loading="lazy" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
   </div>
@@ -1142,7 +1139,7 @@
       skills:     { num: '03 · SKILLS',      ttl: 'Expertise' },
       certs:      { num: '04 · CERTS',       ttl: 'Credentials' },
       industries: { num: '05 · INDUSTRIES',  ttl: 'Sector Context' },
-      activity:   { num: '06 · ACTIVITY',    ttl: 'Interests & POV' },
+      activity:   { num: '06 · ACTIVITY',    ttl: 'Engagement & POV' },
       languages:  { num: '07 · LANGUAGES',   ttl: 'Fluency' },
       contact:    { num: '08 · CONTACT',     ttl: 'Get in touch' },
     };
@@ -1152,14 +1149,12 @@
       if (!target) return '<div class="m-nav-spacer"></div>';
       const lbl = PANEL_LABELS[target];
       const arrow = dir === 'prev' ? ARROW_LEFT : ARROW_RIGHT;
-      const dirText = dir === 'prev' ? 'Previous' : 'Next';
-      const inner = dir === 'prev'
-        ? '<span class="dir">' + arrow + dirText + '</span>'
-        : '<span class="dir">' + dirText + arrow + '</span>';
-      return '<button class="m-nav-tile ' + dir + '" data-open="' + target + '">'
+      const ttl = '<span class="ttl">' + lbl.ttl + '</span>';
+      const arr = '<span class="dir">' + arrow + '</span>';
+      const inner = dir === 'prev' ? arr + ttl : ttl + arr;
+      return '<button class="m-nav-tile ' + dir + '" data-open="' + target + '" aria-label="'
+        + (dir === 'prev' ? 'Previous: ' : 'Next: ') + lbl.ttl + '">'
         + inner
-        + '<span class="num">' + lbl.num + '</span>'
-        + '<span class="ttl">' + lbl.ttl + '</span>'
         + '</button>';
     }
     document.querySelectorAll('[data-panel]').forEach(modal => {
